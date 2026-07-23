@@ -11,6 +11,7 @@ import { localized } from '../../intl';
 import { AttributeValues } from '../models/model';
 import { Contact } from '../models/contact';
 import { ZERO_WIDTH_SPACE } from '../../components/composer-editor/plaintext';
+import { extractSignatureInlineImages } from '../../services/signature-inline-image-extractor';
 
 function applyExtensionTransforms(draft: Message, recipient: Contact) {
   // Note / todo: This code assumes that:
@@ -54,6 +55,7 @@ export class SendDraftTask extends Task {
     task.draft = d.clone();
     task.headerMessageId = task.draft.headerMessageId;
     task.silent = silent;
+    extractSignatureInlineImages(task.draft);
 
     const separateBodies = ComposerExtensionRegistry.extensions().some(
       (ext) => ext.needsPerRecipientBodies && ext.needsPerRecipientBodies(task.draft)
