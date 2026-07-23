@@ -27,6 +27,7 @@ describe('extractSignatureInlineImages', function () {
     extractSignatureInlineImages(this.draft);
 
     expect(this.draft.files.length).toBe(1);
+    expect(this.draft.files[0].filename).toBe('Signature Image 1');
     expect(this.draft.files[0].contentId).toBeTruthy();
     expect(this.draft.body).toContain(`src="cid:${this.draft.files[0].contentId}"`);
     expect(fs.existsSync(AttachmentStore.pathForFile(this.draft.files[0]))).toBe(true);

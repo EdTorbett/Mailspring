@@ -8,21 +8,6 @@ import AttachmentStore from '../flux/stores/attachment-store';
 
 const MAX_ATTACHMENT_BYTES = 25 * 1000000;
 
-const IMAGE_EXTENSIONS = {
-  'image/apng': 'apng',
-  'image/avif': 'avif',
-  'image/bmp': 'bmp',
-  'image/gif': 'gif',
-  'image/heic': 'heic',
-  'image/heif': 'heif',
-  'image/jpeg': 'jpg',
-  'image/jpg': 'jpg',
-  'image/png': 'png',
-  'image/svg+xml': 'svg',
-  'image/tiff': 'tiff',
-  'image/webp': 'webp',
-};
-
 function parseImageDataURI(src: string) {
   const match = src.match(/^data:(image\/[a-z0-9.+-]+);base64,([a-z0-9+/=\s]+)$/i);
   if (!match) {
@@ -31,9 +16,8 @@ function parseImageDataURI(src: string) {
 
   const mimeType = match[1].toLowerCase();
   const payload = match[2].replace(/\s/g, '');
-  const extension = IMAGE_EXTENSIONS[mimeType] || mimeType.split('/').pop().split('+')[0];
 
-  if (!extension || payload.length === 0 || payload.length % 4 !== 0) {
+  if (payload.length === 0 || payload.length % 4 !== 0) {
     return null;
   }
 
@@ -42,23 +26,21 @@ function parseImageDataURI(src: string) {
     return null;
   }
 
-  return { buffer, extension, mimeType };
+  return { buffer, mimeType };
 }
 
 function fileForImageData({
   index,
   buffer,
-  extension,
   mimeType,
 }: {
   index: number;
   buffer: Buffer;
-  extension: string;
   mimeType: string;
 }) {
   const file = new File({
     id: Utils.generateTempId(),
-    filename: `Signature Image ${index}.${extension}`,
+    filename: `Signature Image ${index}`,
     size: buffer.length,
     contentType: mimeType,
     messageId: null,
@@ -99,7 +81,7 @@ export function extractSignatureInlineImages(draft: Message) {
       throw new Error(
         localized(
           `%@ cannot be attached because it is larger than 25MB.`,
-          `Signature Image ${signatureImageIndex}.${parsed.extension}`
+          `Signature Image ${signatureImageIndex}`
         )
       );
     }
@@ -110,7 +92,6 @@ export function extractSignatureInlineImages(draft: Message) {
     const file = fileForImageData({
       index: signatureImageIndex,
       buffer: parsed.buffer,
-      extension: parsed.extension,
       mimeType: parsed.mimeType,
     });
 
